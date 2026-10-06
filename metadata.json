@@ -1,0 +1,6 @@
+{
+  "name": "IT Helpdesk & Incident Service Portal",
+  "description": "ระบบศูนย์บริการและจัดการแจ้งซ่อมไอที (Nexus IT Helpdesk) บริหารคำร้อง ติดตามสถานะ SLA แจ้งปัญหาอุปกรณ์และระบบเครือข่ายสำหรับองค์กรและสถานศึกษา",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

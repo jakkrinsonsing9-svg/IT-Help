@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Plus Jakarta Sans', 'Sarabun', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6, .font-headline {
+    font-family: 'Plus Jakarta Sans', 'Prompt', sans-serif;
+  }
+  
+  .font-mono, code, pre {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* Material Symbols icon support */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #c4c5d9;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #747687;
+}
+
+/* Neumorphic / Clay Styling Mode */
+.neu-flat {
+  background: #ebf0f7;
+  box-shadow: 6px 6px 14px rgba(166, 180, 200, 0.45), -6px -6px 14px #ffffff;
+}
+.neu-card {
+  background: #ebf0f7;
+  box-shadow: 7px 7px 16px rgba(166, 180, 200, 0.45), -7px -7px 16px #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+.neu-inset {
+  background: #e4eaf3;
+  box-shadow: inset 3px 3px 6px rgba(166, 180, 200, 0.45), inset -3px -3px 6px rgba(255, 255, 255, 0.85);
+}
+.neu-inset-deep {
+  background: #dee5f0;
+  box-shadow: inset 4px 4px 8px rgba(166, 180, 200, 0.5), inset -4px -4px 8px rgba(255, 255, 255, 0.9);
+}
+.neu-button {
+  background: #ebf0f7;
+  box-shadow: 4px 4px 10px rgba(166, 180, 200, 0.4), -4px -4px 10px rgba(255, 255, 255, 0.95);
+  transition: all 0.15s ease;
+}
+.neu-button:hover {
+  box-shadow: 2px 2px 6px rgba(166, 180, 200, 0.45), -2px -2px 6px rgba(255, 255, 255, 0.9);
+}
+.neu-button:active, .neu-pressed {
+  background: #e1e7f0;
+  box-shadow: inset 3px 3px 6px rgba(166, 180, 200, 0.45), inset -3px -3px 6px rgba(255, 255, 255, 0.9);
+}
+.neu-primary-button {
+  background: linear-gradient(145deg, #2458eb, #143ee4);
+  box-shadow: 4px 4px 12px rgba(20, 62, 228, 0.35), -3px -3px 8px rgba(255, 255, 255, 0.6);
+  color: #ffffff;
+}
