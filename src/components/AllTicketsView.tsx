@@ -4,6 +4,7 @@ import {
   TicketStatus,
   TicketCategory,
   TicketPriority,
+  UserProfile,
   AppTheme,
   ActiveView,
 } from '../types';

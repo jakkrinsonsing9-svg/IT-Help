@@ -1,71 +1,23 @@
 import { Ticket, Technician, UserProfile } from './types';
 
-export const CURRENT_USER: UserProfile = {
-  id: 'usr-001',
-  name: 'สมชาย ศรีสุวรรณ',
-  email: 'somchai.s@univ.ac.th',
-  role: 'admin',
-  roleLabel: 'เจ้าหน้าที่ไอที / แอดมินระบบ',
-  department: 'ศูนย์เทคโนโลยีสารสนเทศและบริการเครือข่าย',
-  phone: '081-889-4512',
-  avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBnWTsL_F2iP2oickxsBBUrQu5xTSfx2c1ubl5wm7wjXarPHiWrFJITGxiQJatzdfhybnmHFLyCoMwxIXxAhyMoxV59crpYJ3PpLl9_NDgB-WTK7xj7YTxoc7EW9ZcZLXveb3cuYFc_J-vgMMtrBoOSQ2MAhXm6JfJKtx3pn0lOvIXq3pt8GIRgknFMFZvDj2oH9xdv-H_eLPBIVotoHN8PkQiQY_x6cGPeE4YUxmsLjUHd8hL9VR0',
-  campus: 'วิทยาเขตหลัก (Main Campus)',
+export const ROLE_ACCOUNTS: Record<string, UserProfile> = {
+  admin: {
+    id: 'usr-admin-01',
+    name: 'จักรินทร์ (Super Admin)',
+    email: 'jakkrinsonsing9@gmail.com',
+    role: 'admin',
+    roleLabel: 'แอดมินระบบสูงสุด (Super Admin - อำนาจสูงสุด)',
+    department: 'ศูนย์เทคโนโลยีสารสนเทศและผู้ดูแลระบบหลัก',
+    phone: '081-889-4512',
+    avatar:
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuBnWTsL_F2iP2oickxsBBUrQu5xTSfx2c1ubl5wm7wjXarPHiWrFJITGxiQJatzdfhybnmHFLyCoMwxIXxAhyMoxV59crpYJ3PpLl9_NDgB-WTK7xj7YTxoc7EW9ZcZLXveb3cuYFc_J-vgMMtrBoOSQ2MAhXm6JfJKtx3pn0lOvIXq3pt8GIRgknFMFZvDj2oH9xdv-H_eLPBIVotoHN8PkQiQY_x6cGPeE4YUxmsLjUHd8hL9VR0',
+    campus: 'วิทยาเขตหลัก (Main Campus)',
+  },
 };
 
-export const TECHNICIANS_LIST: Technician[] = [
-  {
-    id: 'tech-01',
-    code: 'IT-04',
-    name: 'วรวิทย์ ยิ่งยง',
-    role: 'ช่างฮาร์ดแวร์ & โสตฯ',
-    department: 'ฝ่ายบริการอุปกรณ์คอมพิวเตอร์',
-    location: 'หน้างาน: อาคารเรียนรวม',
-    status: 'available',
-    activeLoad: 2,
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAfP2hFoqefB-ZXmay836sp_LlaLisj-lQcqAgBxFCIbZGWUaVN06HRgYAEhCBdZHBGiiXairDtSQhEiEFhsIJ0Eslqdy3jmP9FldoJbEyGWUV7U2o7dyY-V7BdignbAHcLn3ZvFte-ShZKDBS4ltDnF1K53JHvpYUMTD7_lC88u3iovlrORGf5Bqlc6-7Hbghetn3t0KMaOVa4MZp22oB6peu1ANtjQeUhiG6_WxiWRlFwN9IvrXI',
-    extension: '4401',
-    phone: '084-219-4401',
-  },
-  {
-    id: 'tech-02',
-    code: 'IT-06',
-    name: 'กานดา นวลสว่าง',
-    role: 'วิศวกรระบบเครือข่าย',
-    department: 'ฝ่ายระบบเครือข่ายและความปลอดภัย',
-    location: 'ศูนย์คอมพิวเตอร์ อาคาร 3',
-    status: 'available',
-    activeLoad: 0,
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAFB3Q2fOssupJ0qcvL__-Tu5gs5hO7k5jjuPWX0iaSZZ7lBVOzwLbMV-gp0Nqpgonu_V2vAMDwDMEO0lvqPF1zbfvtkbnc8DmxRl0na6Zay5-jMQFHmsth5FnGQDEv126FqrEgWst9EEXyedudkstLR1ykISScgLWCbsosxTLoMRcjZnuKhkUoyUQtGcIz0EMPkWcvN7RaoHnau6FK6WUDh2Ozu2wDgF05UW2DFQJu10Frr8Bro9U',
-    extension: '4405',
-    phone: '089-771-4405',
-  },
-  {
-    id: 'tech-03',
-    code: 'IT-02',
-    name: 'ธนกร ภัทรเดช',
-    role: 'บริการซอฟต์แวร์และแอป',
-    department: 'ฝ่ายบริการแอปพลิเคชันและพัฒนาระบบ',
-    location: 'กำลัง Remote ช่วยผู้ใช้',
-    status: 'busy',
-    activeLoad: 3,
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBxqIBX1Ai2kASVAhVrvt2vcmjkiKFW7JcCxvIvHiIOi5Zhzib5ZDA2ZdJulA8oUdoTDIV9ehKEYdQvCZBVA44389rZnP36Oetlb3D8OL6YDgQwBJoARVku744i1Gm4GruiXKnzn3aArCtQABlimQ08eGucDRMWSn9AMi44It0AAYqCK3APM3qZD6E6vf56NK7RAaTwUyx8yqKtgovN-TppAthd-fEoWdg20HRgXCFGfDidffT4KhI',
-    extension: '4403',
-    phone: '081-334-4403',
-  },
-  {
-    id: 'tech-04',
-    code: 'IT-08',
-    name: 'ณัฐพล สดใส',
-    role: 'ช่างเทคนิคโครงข่าย',
-    department: 'ฝ่ายโครงสร้างพื้นฐานระบบ',
-    location: 'พร้อมออกปฏิบัติการ',
-    status: 'available',
-    activeLoad: 1,
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCRx8sBBcPz8sybMlgMQl_qXmLMkO991RJsPgfySKZZxUGzhe0TXh_0gB3GcWSGH9fKezyPY1x4Sdpgf-f-TtsWep1cupW2EZtg9tuaGZH6ym3Tbj8DLaamn0e4GY0WCcl72IZid26YLtEYtys1w92ZMhBwuL2HzGBacaqMWgIzrvwluZ5aC4zQyDzPdxh4xgIUNr7ddIJEeN7hRntrPErTXtBa9wsunNQbvjABe-fOnHVlzax6vZY',
-    extension: '4408',
-    phone: '086-455-4408',
-  },
-];
+export const CURRENT_USER: UserProfile = ROLE_ACCOUNTS.admin;
+
+export const TECHNICIANS_LIST: Technician[] = [];
 
 // Initial tickets are empty so user starts with clean real data
 export const INITIAL_TICKETS: Ticket[] = [];

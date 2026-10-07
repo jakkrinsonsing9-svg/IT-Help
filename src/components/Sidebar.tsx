@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActiveView, UserProfile, AppTheme } from '../types';
+import { ActiveView, UserProfile, AppTheme, UserRole } from '../types';
 
 interface SidebarProps {
   currentView: ActiveView;
@@ -9,6 +9,7 @@ interface SidebarProps {
   isOpenMobile: boolean;
   onCloseMobile: () => void;
   onOpenAuth: () => void;
+  onSwitchRole?: (role: UserRole) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -19,20 +20,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpenMobile,
   onCloseMobile,
   onOpenAuth,
+  onSwitchRole,
 }) => {
   const isNeu = theme === 'neumorphic';
-
-  const navItemsGeneral: { id: ActiveView; label: string; icon: string }[] = [
-    { id: 'dashboard', label: 'แผงควบคุม', icon: 'grid_view' },
-    { id: 'new-ticket', label: 'แจ้งซ่อมใหม่', icon: 'add_circle' },
-    { id: 'my-tickets', label: 'ใบแจ้งซ่อมของฉัน', icon: 'receipt_long' },
-  ];
-
-  const navItemsAdmin: { id: ActiveView; label: string; icon: string }[] = [
-    { id: 'all-tickets', label: 'จัดการงานทั้งหมด', icon: 'inbox' },
-    { id: 'users', label: 'ช่างและผู้ใช้งาน', icon: 'manage_accounts' },
-    { id: 'profile', label: 'โปรไฟล์', icon: 'account_circle' },
-  ];
 
   const handleNavClick = (view: ActiveView) => {
     onNavigate(view);
@@ -42,6 +32,65 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const asideClasses = isNeu
     ? 'bg-[#e9eff7] border-r border-white/60 shadow-[5px_0_15px_rgba(166,180,200,0.25)]'
     : 'bg-white border-r border-slate-200/80 shadow-[0_1px_8px_rgba(0,0,0,0.04)]';
+
+  // Role-tailored navigation items
+  const getNavSections = () => {
+    if (currentUser.role === 'admin') {
+      return [
+        {
+          title: 'ศูนย์อำนาจแอดมิน / Super Admin',
+          items: [
+            { id: 'dashboard' as ActiveView, label: 'แผงควบคุมระบบ', icon: 'grid_view' },
+            { id: 'admin-center' as ActiveView, label: '🛡️ ศูนย์อำนาจแอดมิน', icon: 'admin_panel_settings', badge: 'สูงสุด' },
+            { id: 'all-tickets' as ActiveView, label: 'จัดการงานทั้งหมด', icon: 'inbox' },
+            { id: 'tech-workspace' as ActiveView, label: 'โต๊ะงานช่าง', icon: 'engineering' },
+          ],
+        },
+        {
+          title: 'การจัดการ / Operations',
+          items: [
+            { id: 'new-ticket' as ActiveView, label: 'สร้างใบแจ้งซ่อม', icon: 'add_circle' },
+            { id: 'users' as ActiveView, label: 'ช่างและผู้ใช้งาน', icon: 'manage_accounts' },
+            { id: 'profile' as ActiveView, label: 'โปรไฟล์ของฉัน', icon: 'account_circle' },
+          ],
+        },
+      ];
+    } else if (currentUser.role === 'technician') {
+      return [
+        {
+          title: 'ส่วนช่างเทคนิค / Tech Desk',
+          items: [
+            { id: 'tech-workspace' as ActiveView, label: '🛠️ โต๊ะงานช่าง', icon: 'engineering', badge: 'คิวงาน' },
+            { id: 'my-tickets' as ActiveView, label: 'งานที่รับผิดชอบ', icon: 'receipt_long' },
+            { id: 'all-tickets' as ActiveView, label: 'คลังงานกลาง (รอหยิบ)', icon: 'inbox' },
+          ],
+        },
+        {
+          title: 'บริการและข้อมูล / Support',
+          items: [
+            { id: 'dashboard' as ActiveView, label: 'ภาพรวมงานซ่อม', icon: 'analytics' },
+            { id: 'users' as ActiveView, label: 'รายชื่อทีมช่าง', icon: 'badge' },
+            { id: 'new-ticket' as ActiveView, label: 'เปิดงานแทนผู้ใช้', icon: 'add_circle' },
+            { id: 'profile' as ActiveView, label: 'โปรไฟล์ช่าง', icon: 'account_circle' },
+          ],
+        },
+      ];
+    } else {
+      // User / Requester
+      return [
+        {
+          title: 'บริการผู้ใช้ / User Services',
+          items: [
+            { id: 'new-ticket' as ActiveView, label: '➕ แจ้งซ่อมใหม่', icon: 'add_circle', highlight: true },
+            { id: 'my-tickets' as ActiveView, label: 'ใบแจ้งซ่อมของฉัน', icon: 'receipt_long' },
+            { id: 'profile' as ActiveView, label: 'โปรไฟล์ผู้ใช้', icon: 'account_circle' },
+          ],
+        },
+      ];
+    }
+  };
+
+  const navSections = getNavSections();
 
   return (
     <>
@@ -66,7 +115,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`w-9 h-9 rounded-xl flex items-center justify-center p-1 cursor-pointer ${
                   isNeu ? 'neu-button' : 'bg-blue-50 border border-blue-100'
                 }`}
-                onClick={() => handleNavClick('dashboard')}
+                onClick={() =>
+                  handleNavClick(
+                    currentUser.role === 'admin'
+                      ? 'dashboard'
+                      : currentUser.role === 'technician'
+                      ? 'tech-workspace'
+                      : 'my-tickets'
+                  )
+                }
               >
                 <img
                   alt="IT Helpdesk Logo"
@@ -76,7 +133,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
               <div
                 className="flex flex-col cursor-pointer"
-                onClick={() => handleNavClick('dashboard')}
+                onClick={() =>
+                  handleNavClick(
+                    currentUser.role === 'admin'
+                      ? 'dashboard'
+                      : currentUser.role === 'technician'
+                      ? 'tech-workspace'
+                      : 'my-tickets'
+                  )
+                }
               >
                 <span className="font-headline text-[17px] font-bold text-[#143ee4] tracking-tight leading-none">
                   IT Helpdesk
@@ -96,94 +161,144 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
           </div>
 
-          {/* User Status Ribbon */}
+          {/* User Role Ribbon Banner */}
           <div className="px-4 py-2">
             <div
-              className={`px-3 py-2 rounded-xl flex items-center justify-between ${
+              className={`p-2.5 rounded-2xl flex flex-col gap-1.5 ${
                 isNeu
                   ? 'neu-inset'
-                  : 'bg-slate-50 border border-slate-200/60'
+                  : currentUser.role === 'admin'
+                  ? 'bg-blue-50/80 border border-blue-200/80'
+                  : currentUser.role === 'technician'
+                  ? 'bg-amber-50/80 border border-amber-200/80'
+                  : 'bg-emerald-50/80 border border-emerald-200/80'
               }`}
             >
-              <span className="text-xs text-slate-500 font-medium">
-                สถานะผู้ใช้
-              </span>
-              <span
-                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                  isNeu
-                    ? 'neu-flat text-[#143ee4] bg-[#e9eff7]'
-                    : 'bg-blue-100/70 text-[#006591]'
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                {currentUser.role === 'admin' ? 'เจ้าหน้าที่ไอที' : 'ผู้ใช้งานทั่วไป'}
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                  สิทธิ์การใช้งาน
+                </span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm">
+                  {currentUser.role === 'admin' && '🛡️'}
+                  {currentUser.role === 'technician' && '🛠️'}
+                  {currentUser.role === 'user' && '👤'}
+                </span>
+                <span
+                  className={`text-xs font-extrabold truncate ${
+                    currentUser.role === 'admin'
+                      ? 'text-[#143ee4]'
+                      : currentUser.role === 'technician'
+                      ? 'text-amber-800'
+                      : 'text-emerald-800'
+                  }`}
+                >
+                  {currentUser.role === 'admin' && 'แอดมิน (อำนาจสูงสุด)'}
+                  {currentUser.role === 'technician' && 'ช่างเทคนิคไอที'}
+                  {currentUser.role === 'user' && 'ผู้ใช้บริการ (User)'}
+                </span>
+              </div>
+
+              {/* Fast 3-Role Toggle Mini Pills */}
+              {onSwitchRole && (
+                <div className="pt-1.5 mt-1 border-t border-slate-200/60 grid grid-cols-3 gap-1 text-[10px]">
+                  <button
+                    onClick={() => onSwitchRole('admin')}
+                    title="สลับเป็น แอดมิน (อำนาจสูงสุด)"
+                    className={`py-1 rounded font-bold transition-all ${
+                      currentUser.role === 'admin'
+                        ? 'bg-[#143ee4] text-white shadow-xs'
+                        : 'bg-white/80 text-slate-600 hover:bg-white'
+                    }`}
+                  >
+                    แอดมิน
+                  </button>
+                  <button
+                    onClick={() => onSwitchRole('technician')}
+                    title="สลับเป็น ช่างเทคนิค"
+                    className={`py-1 rounded font-bold transition-all ${
+                      currentUser.role === 'technician'
+                        ? 'bg-amber-600 text-white shadow-xs'
+                        : 'bg-white/80 text-slate-600 hover:bg-white'
+                    }`}
+                  >
+                    ช่าง
+                  </button>
+                  <button
+                    onClick={() => onSwitchRole('user')}
+                    title="สลับเป็น ผู้ใช้บริการ"
+                    className={`py-1 rounded font-bold transition-all ${
+                      currentUser.role === 'user'
+                        ? 'bg-emerald-600 text-white shadow-xs'
+                        : 'bg-white/80 text-slate-600 hover:bg-white'
+                    }`}
+                  >
+                    ผู้ใช้
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Navigation Links */}
-          <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
-            <div className="px-3 pt-2 pb-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              ทั่วไป / General
-            </div>
-            {navItemsGeneral.map((item) => {
-              const active = currentView === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleNavClick(item.id)}
-                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
-                    active
-                      ? isNeu
-                        ? 'neu-pressed font-bold text-[#143ee4]'
-                        : 'bg-[#143ee4] text-white font-semibold shadow-sm'
-                      : isNeu
-                      ? 'text-slate-600 hover:text-[#143ee4] neu-button mb-1'
-                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900'
-                  }`}
-                >
-                  <span
-                    className={`material-symbols-outlined text-[20px] ${
-                      active ? (isNeu ? 'text-[#143ee4]' : 'text-white') : 'text-slate-400'
-                    }`}
-                  >
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-
-            <div className="pt-4 px-3 pb-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              การจัดการ / Administration
-            </div>
-            {navItemsAdmin.map((item) => {
-              const active = currentView === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleNavClick(item.id)}
-                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all text-left ${
-                    active
-                      ? isNeu
-                        ? 'neu-pressed font-bold text-[#143ee4]'
-                        : 'bg-[#143ee4] text-white font-semibold shadow-sm'
-                      : isNeu
-                      ? 'text-slate-600 hover:text-[#143ee4] neu-button mb-1'
-                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900'
-                  }`}
-                >
-                  <span
-                    className={`material-symbols-outlined text-[20px] ${
-                      active ? (isNeu ? 'text-[#143ee4]' : 'text-white') : 'text-slate-400'
-                    }`}
-                  >
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
+          <nav className="flex-1 px-3 py-2 space-y-3 overflow-y-auto">
+            {navSections.map((section, idx) => (
+              <div key={idx} className="space-y-1">
+                <div className="px-3 pt-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  {section.title}
+                </div>
+                {section.items.map((item) => {
+                  const active = currentView === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleNavClick(item.id)}
+                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all text-left ${
+                        active
+                          ? isNeu
+                            ? 'neu-pressed font-bold text-[#143ee4]'
+                            : 'bg-[#143ee4] text-white font-semibold shadow-sm'
+                          : (item as any).highlight
+                          ? 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold border border-emerald-200/80 mb-1'
+                          : isNeu
+                          ? 'text-slate-600 hover:text-[#143ee4] neu-button mb-1'
+                          : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span
+                          className={`material-symbols-outlined text-[20px] ${
+                            active
+                              ? isNeu
+                                ? 'text-[#143ee4]'
+                                : 'text-white'
+                              : (item as any).highlight
+                              ? 'text-emerald-700'
+                              : 'text-slate-400'
+                          }`}
+                        >
+                          {item.icon}
+                        </span>
+                        <span className="truncate">{item.label}</span>
+                      </div>
+                      {(item as any).badge && (
+                        <span
+                          className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded ${
+                            active
+                              ? 'bg-white/20 text-white'
+                              : 'bg-amber-100 text-amber-800'
+                          }`}
+                        >
+                          {(item as any).badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
           </nav>
         </div>
 
@@ -207,7 +322,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {currentUser.name}
               </span>
               <span className="text-[11px] text-slate-500 truncate">
-                {currentUser.email}
+                {currentUser.roleLabel}
               </span>
             </div>
             <button

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserProfile, AppTheme, ActiveView } from '../types';
+import { UserProfile, UserRole, AppTheme, ActiveView } from '../types';
 
 interface HeaderProps {
   currentUser: UserProfile;
@@ -13,6 +13,7 @@ interface HeaderProps {
   onOpenSupabase: () => void;
   isSupabaseConnected: boolean;
   onToggleRole?: () => void;
+  onSwitchRole?: (role: UserRole) => void;
   unreadCount?: number;
 }
 
@@ -28,11 +29,13 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSupabase,
   isSupabaseConnected,
   onToggleRole,
+  onSwitchRole,
   unreadCount = 3,
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showRoleMenu, setShowRoleMenu] = useState(false);
 
   const isNeu = theme === 'neumorphic';
 
@@ -259,30 +262,140 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Separator */}
         <div className="h-6 w-px bg-slate-200 mx-1 hidden sm:block"></div>
 
-        {/* Quick Role Switcher Pill */}
-        {onToggleRole && (
+        {/* 3-Role Switcher Pill & Popover */}
+        <div className="relative">
           <button
-            onClick={onToggleRole}
-            title={`สิทธิ์ปัจจุบัน: ${currentUser.role === 'admin' ? 'Admin' : 'User'} (คลิกเพื่อสลับ)`}
-            className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-2xs ${
+            onClick={() => setShowRoleMenu(!showRoleMenu)}
+            title="สลับบทบาทการใช้งาน (แอดมิน / ช่างเทคนิค / ผู้ใช้บริการ)"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all border shadow-2xs ${
               currentUser.role === 'admin'
-                ? 'bg-blue-50 hover:bg-blue-100 text-[#143ee4] border border-blue-200/80'
-                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80'
+                ? 'bg-blue-50 hover:bg-blue-100 text-[#143ee4] border-blue-200/90'
+                : currentUser.role === 'technician'
+                ? 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300'
+                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-300'
             }`}
           >
-            <span
-              className={`w-2 h-2 rounded-full ${
-                currentUser.role === 'admin' ? 'bg-[#143ee4]' : 'bg-emerald-500'
-              }`}
-            ></span>
             <span>
-              {currentUser.role === 'admin' ? 'แอดมิน (Admin)' : 'ผู้ใช้ (User)'}
+              {currentUser.role === 'admin' && '🛡️'}
+              {currentUser.role === 'technician' && '🛠️'}
+              {currentUser.role === 'user' && '👤'}
             </span>
-            <span className="material-symbols-outlined text-[15px] opacity-60">
-              swap_horiz
+            <span className="hidden sm:inline">
+              {currentUser.role === 'admin' && 'แอดมิน (อำนาจสูงสุด)'}
+              {currentUser.role === 'technician' && 'ช่างเทคนิคไอที'}
+              {currentUser.role === 'user' && 'ผู้ใช้บริการ (User)'}
+            </span>
+            <span className="material-symbols-outlined text-[16px] opacity-70">
+              arrow_drop_down
             </span>
           </button>
-        )}
+
+          {/* 3-Role Selector Popover */}
+          {showRoleMenu && (
+            <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 p-3 z-50 animate-in fade-in-50 zoom-in-95">
+              <div className="px-2 py-1.5 border-b border-slate-100 mb-2">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  สลับบทบาทการใช้งาน (Role Selection)
+                </span>
+                <span className="text-xs text-slate-600 mt-0.5 block">
+                  เลือกบทบาทเพื่อทดสอบสิทธิ์และการเข้าถึงแต่ละส่วนของระบบ
+                </span>
+              </div>
+
+              <div className="space-y-1.5">
+                {/* 1. Admin Option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onSwitchRole) onSwitchRole('admin');
+                    else if (onToggleRole) onToggleRole();
+                    setShowRoleMenu(false);
+                  }}
+                  className={`w-full p-2.5 rounded-xl text-left border transition-all flex items-start gap-3 ${
+                    currentUser.role === 'admin'
+                      ? 'bg-blue-50/80 border-[#143ee4] ring-1 ring-[#143ee4]/30'
+                      : 'border-slate-100 hover:bg-slate-50 hover:border-slate-200'
+                  }`}
+                >
+                  <span className="text-2xl shrink-0 mt-0.5">🛡️</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-900">
+                        แอดมินระบบ (Admin)
+                      </span>
+                      <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded bg-blue-100 text-[#143ee4]">
+                        อำนาจสูงสุด
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-slate-500 block mt-0.5 leading-snug">
+                      จัดการทุกส่วน ลบ/ล้างข้อมูล บังคับมอบหมายงาน และกำหนดสิทธิ์ทุกคน
+                    </span>
+                  </div>
+                </button>
+
+                {/* 2. Technician Option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onSwitchRole) onSwitchRole('technician');
+                    else if (onToggleRole) onToggleRole();
+                    setShowRoleMenu(false);
+                  }}
+                  className={`w-full p-2.5 rounded-xl text-left border transition-all flex items-start gap-3 ${
+                    currentUser.role === 'technician'
+                      ? 'bg-amber-50/80 border-amber-500 ring-1 ring-amber-500/30'
+                      : 'border-slate-100 hover:bg-slate-50 hover:border-slate-200'
+                  }`}
+                >
+                  <span className="text-2xl shrink-0 mt-0.5">🛠️</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-900">
+                        ช่างเทคนิค (Technician)
+                      </span>
+                      <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800">
+                        ปฏิบัติการ
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-slate-500 block mt-0.5 leading-snug">
+                      โต๊ะงานช่าง รับงานจากคลังกลาง (Claim) อัปเดตงานซ่อม และปิดงาน
+                    </span>
+                  </div>
+                </button>
+
+                {/* 3. User Option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onSwitchRole) onSwitchRole('user');
+                    else if (onToggleRole) onToggleRole();
+                    setShowRoleMenu(false);
+                  }}
+                  className={`w-full p-2.5 rounded-xl text-left border transition-all flex items-start gap-3 ${
+                    currentUser.role === 'user'
+                      ? 'bg-emerald-50/80 border-emerald-500 ring-1 ring-emerald-500/30'
+                      : 'border-slate-100 hover:bg-slate-50 hover:border-slate-200'
+                  }`}
+                >
+                  <span className="text-2xl shrink-0 mt-0.5">👤</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-900">
+                        ผู้ใช้บริการ (User / Staff)
+                      </span>
+                      <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800">
+                        แจ้ง & ติดตาม
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-slate-500 block mt-0.5 leading-snug">
+                      แจ้งซ่อมใหม่ ติดตามสถานะงานของตนเอง และส่งข้อความหาช่าง
+                    </span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* User Pill / Dropdown */}
         <div className="relative">
@@ -306,7 +419,7 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           {showUserMenu && (
-            <div className="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-2xl border border-slate-200 py-2 z-50 animate-in fade-in-50 zoom-in-95">
+            <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200 py-2 z-50 animate-in fade-in-50 zoom-in-95">
               <div className="px-3.5 py-2 border-b border-slate-100">
                 <span className="text-xs font-bold text-slate-900 block truncate">
                   {currentUser.name}
@@ -319,32 +432,47 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               </div>
 
-              {/* Role Toggle Row in Dropdown */}
-              {onToggleRole && (
-                <div className="px-3.5 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-400 block uppercase">
-                      สิทธิ์การใช้งาน
-                    </span>
-                    <span
-                      className={`text-xs font-bold ${
-                        currentUser.role === 'admin' ? 'text-[#143ee4]' : 'text-emerald-700'
-                      }`}
-                    >
-                      {currentUser.role === 'admin' ? '🛡️ แอดมิน (Admin)' : '👤 ผู้ใช้ทั่วไป (User)'}
-                    </span>
-                  </div>
+              {/* Fast Role Switch Row in Dropdown */}
+              <div className="px-3.5 py-2 bg-slate-50 border-b border-slate-100">
+                <span className="text-[10px] font-bold text-slate-400 block uppercase mb-1.5">
+                  สิทธิ์ปัจจุบัน: {currentUser.role === 'admin' ? '🛡️ แอดมิน (อำนาจสูงสุด)' : currentUser.role === 'technician' ? '🛠️ ช่างเทคนิค' : '👤 ผู้ใช้บริการ'}
+                </span>
+                <div className="grid grid-cols-3 gap-1">
                   <button
                     onClick={() => {
-                      onToggleRole();
+                      if (onSwitchRole) onSwitchRole('admin');
                       setShowUserMenu(false);
                     }}
-                    className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#143ee4] hover:bg-[#1034bf] text-white transition-colors"
+                    className={`py-1 rounded text-[10px] font-bold ${
+                      currentUser.role === 'admin' ? 'bg-[#143ee4] text-white' : 'bg-white text-slate-700 border border-slate-200'
+                    }`}
                   >
-                    สลับสิทธิ์
+                    แอดมิน
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (onSwitchRole) onSwitchRole('technician');
+                      setShowUserMenu(false);
+                    }}
+                    className={`py-1 rounded text-[10px] font-bold ${
+                      currentUser.role === 'technician' ? 'bg-amber-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
+                    }`}
+                  >
+                    ช่าง
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (onSwitchRole) onSwitchRole('user');
+                      setShowUserMenu(false);
+                    }}
+                    className={`py-1 rounded text-[10px] font-bold ${
+                      currentUser.role === 'user' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-700 border border-slate-200'
+                    }`}
+                  >
+                    ผู้ใช้
                   </button>
                 </div>
-              )}
+              </div>
               <button
                 onClick={() => {
                   onNavigate('profile');

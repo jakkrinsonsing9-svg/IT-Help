@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { UserProfile, ActiveView } from '../types';
+import { UserProfile, UserRole, ActiveView } from '../types';
+import { ROLE_ACCOUNTS } from '../mockData';
 
 interface AuthPortalViewProps {
   currentUser: UserProfile;
@@ -15,8 +16,8 @@ export const AuthPortalView: React.FC<AuthPortalViewProps> = ({
   onShowToast,
 }) => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
-  const [selectedRole, setSelectedRole] = useState<'user' | 'admin'>('admin');
-  const [email, setEmail] = useState('admin@example.com');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('admin');
+  const [email, setEmail] = useState('jakkrinsonsing9@gmail.com');
   const [password, setPassword] = useState('AdminPass@Secure2025');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
@@ -43,53 +44,97 @@ export const AuthPortalView: React.FC<AuthPortalViewProps> = ({
 
   const pwdScore = getPasswordStrength(regPassword);
 
-  const handleFastFill = (role: 'user' | 'admin') => {
+  const handleFastFill = (role: UserRole) => {
     setActiveTab('login');
-    setSelectedRole(role);
-    if (role === 'user') {
-      setEmail('user@example.com');
-      setPassword('UserPass#2025');
-      onShowToast('กรอกบัญชีทดสอบ', 'เลือกบัญชีผู้ใช้ทั่วไป (Staff / Student) แล้ว', 'info');
-    } else {
-      setEmail('admin@example.com');
-      setPassword('AdminPass@Secure2025');
-      onShowToast('กรอกบัญชีทดสอบ', 'เลือกบัญชีเจ้าหน้าที่ไอที (IT Admin / Agent) แล้ว', 'info');
-    }
+    setSelectedRole('admin');
+    setEmail('jakkrinsonsing9@gmail.com');
+    setPassword('AdminPass@Secure2025');
+    onShowToast('กรอกบัญชีแอดมิน', 'เลือกบัญชีแอดมินสูงสุด (jakkrinsonsing9@gmail.com) แล้ว', 'info');
   };
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const loggedUser: UserProfile =
+    const normalizedEmail = email.trim().toLowerCase();
+
+    let loggedUser: UserProfile;
+
+    if (
+      normalizedEmail === 'jakkrinsonsing9@gmail.com' ||
+      normalizedEmail === 'somchai.s@univ.ac.th' ||
       selectedRole === 'admin'
-        ? {
-            id: 'usr-001',
-            name: 'สมชาย ศรีสุวรรณ',
-            email: email || 'somchai.s@univ.ac.th',
-            role: 'admin',
-            roleLabel: 'เจ้าหน้าที่ไอที / แอดมินระบบ',
-            department: 'ศูนย์เทคโนโลยีสารสนเทศและบริการเครือข่าย',
-            phone: '081-889-4512',
-            avatar:
-              'https://lh3.googleusercontent.com/aida-public/AB6AXuBnWTsL_F2iP2oickxsBBUrQu5xTSfx2c1ubl5wm7wjXarPHiWrFJITGxiQJatzdfhybnmHFLyCoMwxIXxAhyMoxV59crpYJ3PpLl9_NDgB-WTK7xj7YTxoc7EW9ZcZLXveb3cuYFc_J-vgMMtrBoOSQ2MAhXm6JfJKtx3pn0lOvIXq3pt8GIRgknFMFZvDj2oH9xdv-H_eLPBIVotoHN8PkQiQY_x6cGPeE4YUxmsLjUHd8hL9VR0',
-            campus: 'วิทยาเขตหลัก (Main Campus)',
-          }
-        : {
-            id: 'usr-002',
-            name: 'คุณกัญญา วัฒนากุล',
-            email: email || 'kanya.w@org.ac.th',
-            role: 'user',
-            roleLabel: 'บุคลากรทั่วไป (Staff / Student)',
-            department: 'แผนกบัญชีและการเงิน',
-            phone: '089-452-9912',
-            avatar:
-              'https://lh3.googleusercontent.com/aida-public/AB6AXuDiJQsCwr1VqyJmlbGqb8jbSLyYbEle1fwdDCyk1HawtrgmprFZP0-AVsCqR_0ovHtWx7buZKrA280iqm01bYMZJ-BwtG1f1hRofUn7QxXZ1k0gbAooMBzHP-_kkx0Vvg2V3UvjkyMTVXyySjNWftjwl3kAJz7CPCEypnDPu-UL5z-Zpw208VSAFeJnho1oxV3FmYYMbPNHjBXltJqfSjxy16g_5dZmrxP-G7FeAeAVyuDv_z54GZk',
-            campus: 'วิทยาเขตหลัก (Main Campus)',
-          };
+    ) {
+      loggedUser = {
+        ...ROLE_ACCOUNTS.admin,
+        email: 'jakkrinsonsing9@gmail.com',
+      };
+    } else {
+      // Check if user is in technicians localStorage
+      let techMatch: any = null;
+      try {
+        const savedTechs = localStorage.getItem('it_technicians');
+        if (savedTechs) {
+          const parsedTechs = JSON.parse(savedTechs);
+          techMatch = parsedTechs.find((t: any) => t.email?.toLowerCase() === normalizedEmail || t.name?.toLowerCase().includes(normalizedEmail.split('@')[0]));
+        }
+      } catch (err) {
+        // ignore
+      }
+
+      if (techMatch || selectedRole === 'technician') {
+        loggedUser = {
+          id: techMatch?.id || 'usr-tech-' + Date.now(),
+          name: techMatch?.name || normalizedEmail.split('@')[0] || 'ช่างเทคนิค',
+          email: normalizedEmail,
+          role: 'technician',
+          roleLabel: 'ช่างเทคนิคไอที (IT Technician)',
+          department: techMatch?.department || 'ฝ่ายบริการอุปกรณ์และระบบ',
+          phone: techMatch?.phone || '085-000-0000',
+          avatar:
+            techMatch?.avatar ||
+            'https://lh3.googleusercontent.com/aida-public/AB6AXuAfP2hFoqefB-ZXmay836sp_LlaLisj-lQcqAgBxFCIbZGWUaVN06HRgYAEhCBdZHBGiiXairDtSQhEiEFhsIJ0Eslqdy3jmP9FldoJbEyGWUV7U2o7dyY-V7BdignbAHcLn3ZvFte-ShZKDBS4ltDnF1K53JHvpYUMTD7_lC88u3iovlrORGf5Bqlc6-7Hbghetn3t0KMaOVa4MZp22oB6peu1ANtjQeUhiG6_WxiWRlFwN9IvrXI',
+          campus: 'วิทยาเขตหลัก (Main Campus)',
+          techCode: techMatch?.code || 'IT-TECH',
+        };
+      } else {
+        loggedUser = {
+          id: 'usr-' + Date.now(),
+          name: normalizedEmail.split('@')[0] || 'ผู้ใช้บริการ',
+          email: normalizedEmail,
+          role: 'user',
+          roleLabel: 'ผู้ใช้บริการ (Staff / Requester)',
+          department: 'แผนกบุคลากรและหน่วยงาน',
+          phone: '089-123-4567',
+          avatar:
+            'https://lh3.googleusercontent.com/aida-public/AB6AXuDiJQsCwr1VqyJmlbGqb8jbSLyYbEle1fwdDCyk1HawtrgmprFZP0-AVsCqR_0ovHtWx7buZKrA280iqm01bYMZJ-BwtG1f1hRofUn7QxXZ1k0gbAooMBzHP-_kkx0Vvg2V3UvjkyMTVXyySjNWftjwl3kAJz7CPCEypnDPu-UL5z-Zpw208VSAFeJnho1oxV3FmYYMbPNHjBXltJqfSjxy16g_5dZmrxP-G7FeAeAVyuDv_z54GZk',
+          campus: 'วิทยาเขตหลัก (Main Campus)',
+        };
+      }
+    }
 
     onLoginAs(loggedUser);
-    onShowToast('เข้าสู่ระบบสำเร็จ', `ยินดีต้อนรับ ${loggedUser.name} สู่ระบบ IT Helpdesk`, 'success');
-    onNavigate('dashboard');
+    try {
+      localStorage.setItem('user_profile', JSON.stringify(loggedUser));
+    } catch (err) {
+      // ignore
+    }
+
+    const roleName =
+      loggedUser.role === 'admin'
+        ? 'แอดมินสูงสุด (Super Admin)'
+        : loggedUser.role === 'technician'
+        ? 'ช่างเทคนิคไอที'
+        : 'ผู้ใช้บริการ';
+
+    onShowToast('เข้าสู่ระบบสำเร็จ', `เข้าสู่ระบบด้วยอีเมล ${loggedUser.email} (${roleName})`, 'success');
+
+    if (loggedUser.role === 'admin') {
+      onNavigate('dashboard');
+    } else if (loggedUser.role === 'technician') {
+      onNavigate('tech-workspace');
+    } else {
+      onNavigate('my-tickets');
+    }
   };
 
   const handleRegisterSubmit = (e: React.FormEvent) => {
@@ -272,56 +317,42 @@ export const AuthPortalView: React.FC<AuthPortalViewProps> = ({
                   </div>
                 </div>
 
-                {/* Sandbox Fast-Fill Test Accounts */}
+                {/* Quick Super Admin Card */}
                 <div className="p-4 rounded-2xl bg-blue-100/50 border border-blue-200/60 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                       <span className="material-symbols-outlined text-[18px] text-[#143ee4]">
-                        data_exploration
+                        admin_panel_settings
                       </span>
-                      คลิกเพื่อกรอกบัญชีทดสอบ (Sandbox Fast-Fill)
+                      เข้าสู่ระบบแอดมินผู้ดูแลระบบหลัก
                     </span>
                     <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-white text-[#143ee4]">
-                      DEV/TEST
+                      SUPER ADMIN
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => handleFastFill('user')}
-                      className="p-2.5 rounded-xl bg-white hover:bg-blue-50 text-left border border-slate-200 transition-all group shadow-xs"
-                    >
-                      <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => handleFastFill('admin')}
+                    className="w-full p-3 rounded-xl text-left border border-blue-300 bg-white hover:bg-blue-50 transition-all shadow-xs flex items-center justify-between group"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-slate-900">
-                          Staff / Student
+                          🛡️ บัญชีแอดมินสูงสุด (Super Admin)
                         </span>
-                        <span className="material-symbols-outlined text-[14px] text-[#143ee4] group-hover:translate-x-0.5 transition-transform">
-                          arrow_forward
+                        <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded bg-blue-100 text-[#143ee4]">
+                          อำนาจสูงสุด
                         </span>
                       </div>
-                      <span className="font-mono text-[10px] text-slate-500 block truncate mt-0.5">
-                        user@example.com
+                      <span className="font-mono text-xs text-[#143ee4] font-semibold block mt-0.5">
+                        jakkrinsonsing9@gmail.com
                       </span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleFastFill('admin')}
-                      className="p-2.5 rounded-xl bg-white hover:bg-blue-50 text-left border border-slate-200 transition-all group shadow-xs"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-900">
-                          IT Admin / Agent
-                        </span>
-                        <span className="material-symbols-outlined text-[14px] text-[#143ee4] group-hover:translate-x-0.5 transition-transform">
-                          arrow_forward
-                        </span>
-                      </div>
-                      <span className="font-mono text-[10px] text-slate-500 block truncate mt-0.5">
-                        admin@example.com
-                      </span>
-                    </button>
-                  </div>
+                    </div>
+                    <span className="text-xs font-bold text-[#143ee4] group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                      คลิกเพื่อกรอก
+                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    </span>
+                  </button>
                 </div>
               </div>
 
@@ -396,34 +427,42 @@ export const AuthPortalView: React.FC<AuthPortalViewProps> = ({
                       <label className="text-xs font-bold text-slate-900 block">
                         เลือกประเภทบัญชีผู้ใช้ (Account Role)
                       </label>
-                      <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedRole('user')}
-                          className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
-                            selectedRole === 'user'
-                              ? 'bg-white text-[#143ee4] shadow-xs'
-                              : 'text-slate-600'
-                          }`}
-                        >
-                          <span className="material-symbols-outlined text-[18px]">
-                            school
-                          </span>
-                          <span>ผู้ใช้งานทั่วไป (Staff / Student)</span>
-                        </button>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-xl">
                         <button
                           type="button"
                           onClick={() => setSelectedRole('admin')}
-                          className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
+                          className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg text-xs font-bold transition-all ${
                             selectedRole === 'admin'
                               ? 'bg-white text-[#143ee4] shadow-xs'
                               : 'text-slate-600'
                           }`}
                         >
-                          <span className="material-symbols-outlined text-[18px]">
-                            engineering
-                          </span>
-                          <span>เจ้าหน้าที่ไอที (IT Support / Admin)</span>
+                          <span>🛡️</span>
+                          <span>แอดมิน (Admin)</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedRole('technician')}
+                          className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg text-xs font-bold transition-all ${
+                            selectedRole === 'technician'
+                              ? 'bg-white text-amber-800 shadow-xs'
+                              : 'text-slate-600'
+                          }`}
+                        >
+                          <span>🛠️</span>
+                          <span>ช่างเทคนิค</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedRole('user')}
+                          className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg text-xs font-bold transition-all ${
+                            selectedRole === 'user'
+                              ? 'bg-white text-emerald-800 shadow-xs'
+                              : 'text-slate-600'
+                          }`}
+                        >
+                          <span>👤</span>
+                          <span>ผู้ใช้บริการ</span>
                         </button>
                       </div>
                     </div>
@@ -434,14 +473,17 @@ export const AuthPortalView: React.FC<AuthPortalViewProps> = ({
                         <button
                           type="button"
                           onClick={() => {
-                            onShowToast('Google SSO', 'กำลังเข้าสู่ระบบผ่าน Google Workspace...', 'info');
-                            setTimeout(() => {
-                              onNavigate('dashboard');
-                            }, 500);
+                            const adminAcc = ROLE_ACCOUNTS.admin;
+                            onLoginAs(adminAcc);
+                            try {
+                              localStorage.setItem('user_profile', JSON.stringify(adminAcc));
+                            } catch (e) {}
+                            onShowToast('Google Workspace Login', `เข้าสู่ระบบสำเร็จในชื่อ ${adminAcc.name} (Super Admin)`, 'success');
+                            onNavigate('dashboard');
                           }}
-                          className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-bold border border-slate-200 transition-colors"
+                          className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-bold border border-slate-200 transition-colors shadow-2xs"
                         >
-                          <svg className="w-4 h-4" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                             <path
                               d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
                               fill="#4285F4"
@@ -459,20 +501,20 @@ export const AuthPortalView: React.FC<AuthPortalViewProps> = ({
                               fill="#EA4335"
                             />
                           </svg>
-                          <span>Google Workspace</span>
+                          <span className="truncate">Google: jakkrinsonsing9@gmail.com</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => {
-                            onShowToast('Microsoft SSO', 'กำลังเข้าสู่ระบบผ่าน Microsoft Azure 365...', 'info');
+                            onShowToast('Microsoft SSO', 'กำลังเชื่อมต่อระบบบัญชี Microsoft 365...', 'info');
                             setTimeout(() => {
                               onNavigate('dashboard');
-                            }, 500);
+                            }, 400);
                           }}
                           className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-bold border border-slate-200 transition-colors"
                         >
-                          <svg className="w-4 h-4" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                             <rect fill="#F25022" height="10" width="10" x="1" y="1" />
                             <rect fill="#7FBA00" height="10" width="10" x="13" y="1" />
                             <rect fill="#00A4EF" height="10" width="10" x="1" y="13" />
@@ -485,7 +527,7 @@ export const AuthPortalView: React.FC<AuthPortalViewProps> = ({
                       <div className="relative flex py-2 items-center">
                         <div className="flex-grow h-px bg-slate-200"></div>
                         <span className="flex-shrink mx-3 text-slate-400 text-[11px] uppercase tracking-wider font-semibold">
-                          หรือลงชื่อเข้าใช้ด้วยอีเมล
+                          หรือล็อกอินด้วยอีเมล
                         </span>
                         <div className="flex-grow h-px bg-slate-200"></div>
                       </div>
@@ -494,22 +536,37 @@ export const AuthPortalView: React.FC<AuthPortalViewProps> = ({
                     {/* Email & Password Form */}
                     <form onSubmit={handleLoginSubmit} className="space-y-4">
                       <div>
-                        <label className="block text-xs font-bold text-slate-900 mb-1.5">
-                          อีเมลองค์กร หรือ บัญชีผู้ใช้งาน (Institutional Email / Username)
-                        </label>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className="text-xs font-bold text-slate-900">
+                            อีเมลที่ใช้งาน (Email Address)
+                          </label>
+                          {email.trim().toLowerCase() === 'jakkrinsonsing9@gmail.com' && (
+                            <span className="text-[11px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                              🛡️ สิทธิ์แอดมินสูงสุด (Super Admin)
+                            </span>
+                          )}
+                          {email.trim().toLowerCase() === 'worawit.y@univ.ac.th' && (
+                            <span className="text-[11px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                              🛠️ สิทธิ์ช่างเทคนิค (IT-04)
+                            </span>
+                          )}
+                        </div>
                         <div className="relative">
                           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">
                             alternate_email
                           </span>
                           <input
-                            type="text"
+                            type="email"
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="somchai.s@univ.ac.th หรือ user@example.com"
+                            placeholder="jakkrinsonsing9@gmail.com หรือ email@example.com"
                             className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#143ee4]/20"
                           />
                         </div>
+                        <p className="text-[11px] text-slate-400 mt-1">
+                          รองรับทั้ง Gmail, อีเมลมหาวิทยาลัย, หรืออีเมลองค์กรทุกโดเมน
+                        </p>
                       </div>
 
                       <div>

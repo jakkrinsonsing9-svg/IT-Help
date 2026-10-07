@@ -22,6 +22,9 @@ export const TicketDetailView: React.FC<TicketDetailViewProps> = ({
 }) => {
   const isNeu = theme === 'neumorphic';
   const isAdmin = currentUser?.role === 'admin';
+  const isTech = currentUser?.role === 'technician';
+  const canManage = isAdmin || isTech;
+  const isRequester = currentUser?.role === 'user';
   const [commentText, setCommentText] = useState('');
   const [attachedFileName, setAttachedFileName] = useState<string | null>(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -602,11 +605,35 @@ export const TicketDetailView: React.FC<TicketDetailViewProps> = ({
               </span>
             </div>
 
-            {isAdmin ? (
+            {canManage ? (
               <div className="flex flex-col gap-2.5">
-                <label className="text-xs font-bold text-slate-800">
-                  อัปเดตสถานะใบแจ้งซ่อมด่วน (Admin):
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-800">
+                    {isAdmin ? '🛡️ แผงควบคุมแอดมิน (อำนาจสูงสุด):' : '🛠️ ปฏิบัติการช่างเทคนิค:'}
+                  </label>
+                  {isAdmin && (
+                    <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-blue-100 text-[#143ee4]">
+                      Full Authority
+                    </span>
+                  )}
+                </div>
+
+                {/* If unassigned, allow Tech/Admin to Claim */}
+                {(!ticket.assignedTech || ticket.status === 'Pending') && (
+                  <button
+                    onClick={() => {
+                      onUpdateStatus(ticket.id, 'In Progress');
+                      onShowToast('รับงานสำเร็จ', `คุณได้กดรับงาน #${ticket.id} เป็นผู้รับผิดชอบแล้ว`, 'success');
+                    }}
+                    className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition-all shadow-xs"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="material-symbols-outlined text-[20px]">handshake</span>
+                      <span>กดรับเป็นผู้รับผิดชอบงานนี้ (Claim)</span>
+                    </div>
+                    <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                  </button>
+                )}
 
                 {/* Resolve Button */}
                 <button
@@ -633,6 +660,31 @@ export const TicketDetailView: React.FC<TicketDetailViewProps> = ({
                   </span>
                 </button>
 
+                {/* In Progress Button */}
+                {ticket.status !== 'In Progress' && (
+                  <button
+                    onClick={() => {
+                      onUpdateStatus(ticket.id, 'In Progress');
+                      onShowToast(
+                        'อัปเดตสำเร็จ',
+                        `เปลี่ยนสถานะ #${ticket.id} เป็น 'กำลังดำเนินการ'`,
+                        'info'
+                      );
+                    }}
+                    className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-white hover:bg-amber-50 text-amber-900 font-bold text-xs border border-slate-200 transition-all shadow-xs"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="material-symbols-outlined text-[18px] text-amber-600">
+                        build
+                      </span>
+                      <span>กำลังดำเนินการซ่อม (In Progress)</span>
+                    </div>
+                    <span className="material-symbols-outlined text-slate-400 text-[16px]">
+                      play_arrow
+                    </span>
+                  </button>
+                )}
+
                 {/* Pending User Button */}
                 <button
                   onClick={() => {
@@ -658,6 +710,31 @@ export const TicketDetailView: React.FC<TicketDetailViewProps> = ({
                   </span>
                 </button>
 
+                {/* Admin Close Button */}
+                {isAdmin && ticket.status !== 'Closed' && (
+                  <button
+                    onClick={() => {
+                      onUpdateStatus(ticket.id, 'Closed');
+                      onShowToast(
+                        'ปิดใบงานสมบูรณ์',
+                        `แอดมินทำการปิดใบงาน #${ticket.id} ถาวร`,
+                        'success'
+                      );
+                    }}
+                    className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs transition-all shadow-xs"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="material-symbols-outlined text-[18px] text-emerald-400">
+                        lock
+                      </span>
+                      <span>ปิดใบงานถาวร (Close Ticket - Admin)</span>
+                    </div>
+                    <span className="material-symbols-outlined text-slate-400 text-[16px]">
+                      done_all
+                    </span>
+                  </button>
+                )}
+
                 {/* Escalate button */}
                 <button
                   onClick={() => {
@@ -681,6 +758,29 @@ export const TicketDetailView: React.FC<TicketDetailViewProps> = ({
                 <label className="text-xs font-bold text-slate-800">
                   เครื่องมือสำหรับผู้แจ้งซ่อม (Requester Tools):
                 </label>
+
+                {/* User Cancel Option if ticket is still pending */}
+                {ticket.status === 'Pending' && (
+                  <button
+                    onClick={() => {
+                      onUpdateStatus(ticket.id, 'Cancelled');
+                      onShowToast(
+                        'ยกเลิกคำร้อง',
+                        `คุณได้ยกเลิกคำร้อง #${ticket.id} เรียบร้อยแล้ว`,
+                        'info'
+                      );
+                    }}
+                    className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-800 font-bold text-xs border border-rose-200 transition-all shadow-xs"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="material-symbols-outlined text-[18px] text-rose-600">
+                        cancel
+                      </span>
+                      <span>ยกเลิกคำร้องแจ้งซ่อมนี้</span>
+                    </div>
+                    <span className="material-symbols-outlined text-rose-400 text-[16px]">close</span>
+                  </button>
+                )}
 
                 {/* Follow up / Ping Tech */}
                 <button

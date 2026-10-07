@@ -94,16 +94,19 @@ export interface Technician {
   phone: string;
 }
 
+export type UserRole = 'admin' | 'technician' | 'user';
+
 export interface UserProfile {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'user';
+  role: UserRole;
   roleLabel: string;
   department: string;
   phone: string;
   avatar: string;
   campus: string;
+  techCode?: string;
 }
 
 export type ActiveView =
@@ -114,6 +117,8 @@ export type ActiveView =
   | 'ticket-detail'
   | 'users'
   | 'profile'
-  | 'auth';
+  | 'auth'
+  | 'tech-workspace'
+  | 'admin-center';
 
 export type AppTheme = 'modern' | 'neumorphic';

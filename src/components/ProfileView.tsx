@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { UserProfile, AppTheme } from '../types';
+import { UserProfile, UserRole, AppTheme } from '../types';
 
 interface ProfileViewProps {
   currentUser: UserProfile;
@@ -10,36 +10,28 @@ interface ProfileViewProps {
 
 const PRESET_AVATARS = [
   {
-    label: 'สมชาย (แอดมิน)',
+    label: 'จักรินทร์ (Super Admin)',
     url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBnWTsL_F2iP2oickxsBBUrQu5xTSfx2c1ubl5wm7wjXarPHiWrFJITGxiQJatzdfhybnmHFLyCoMwxIXxAhyMoxV59crpYJ3PpLl9_NDgB-WTK7xj7YTxoc7EW9ZcZLXveb3cuYFc_J-vgMMtrBoOSQ2MAhXm6JfJKtx3pn0lOvIXq3pt8GIRgknFMFZvDj2oH9xdv-H_eLPBIVotoHN8PkQiQY_x6cGPeE4YUxmsLjUHd8hL9VR0',
   },
   {
-    label: 'คุณกัญญา (การเงิน)',
-    url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDiJQsCwr1VqyJmlbGqb8jbSLyYbEle1fwdDCyk1HawtrgmprFZP0-AVsCqR_0ovHtWx7buZKrA280iqm01bYMZJ-BwtG1f1hRofUn7QxXZ1k0gbAooMBzHP-_kkx0Vvg2V3UvjkyMTVXyySjNWftjwl3kAJz7CPCEypnDPu-UL5z-Zpw208VSAFeJnho1oxV3FmYYMbPNHjBXltJqfSjxy16g_5dZmrxP-G7FeAeAVyuDv_z54GZk',
-  },
-  {
-    label: 'นายณัฐวุฒิ (Support)',
-    url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDVPhObfMsx7YEDOJ2v88dszW25XzPpCdMui0xtmUyskaVG8Shjm0tc0eo_tdc7HkHOAfEuKqGmxdTSiHSlgk4KsGcv_Nshr0Up6Lib-o58Mwpv4v_NIoyAekWeWjWPQpAvzc_RlC6SUrrejGoI4q9pHnQnJaUUuSgpbc-7aahMsB4ROZOPb6HBTQqf_f-ONO2uQK9a2hb4nd0OHobqBpYhcGXd7oTkzgXi9OF4tzreTqvxamUz1BI',
-  },
-  {
-    label: 'วรวิทย์ (ฮาร์ดแวร์)',
+    label: 'รูปโปรไฟล์ A (ฝ่ายเทคโนโลยี)',
     url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAfP2hFoqefB-ZXmay836sp_LlaLisj-lQcqAgBxFCIbZGWUaVN06HRgYAEhCBdZHBGiiXairDtSQhEiEFhsIJ0Eslqdy3jmP9FldoJbEyGWUV7U2o7dyY-V7BdignbAHcLn3ZvFte-ShZKDBS4ltDnF1K53JHvpYUMTD7_lC88u3iovlrORGf5Bqlc6-7Hbghetn3t0KMaOVa4MZp22oB6peu1ANtjQeUhiG6_WxiWRlFwN9IvrXI',
   },
   {
-    label: 'กานดา (เน็ตเวิร์ก)',
+    label: 'รูปโปรไฟล์ B (วิศวกรระบบ)',
     url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAFB3Q2fOssupJ0qcvL__-Tu5gs5hO7k5jjuPWX0iaSZZ7lBVOzwLbMV-gp0Nqpgonu_V2vAMDwDMEO0lvqPF1zbfvtkbnc8DmxRl0na6Zay5-jMQFHmsth5FnGQDEv126FqrEgWst9EEXyedudkstLR1ykISScgLWCbsosxTLoMRcjZnuKhkUoyUQtGcIz0EMPkWcvN7RaoHnau6FK6WUDh2Ozu2wDgF05UW2DFQJu10Frr8Bro9U',
   },
   {
-    label: 'ธนกร (ซอฟต์แวร์)',
+    label: 'รูปโปรไฟล์ C (ช่างซอฟต์แวร์)',
     url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBxqIBX1Ai2kASVAhVrvt2vcmjkiKFW7JcCxvIvHiIOi5Zhzib5ZDA2ZdJulA8oUdoTDIV9ehKEYdQvCZBVA44389rZnP36Oetlb3D8OL6YDgQwBJoARVku744i1Gm4GruiXKnzn3aArCtQABlimQ08eGucDRMWSn9AMi44It0AAYqCK3APM3qZD6E6vf56NK7RAaTwUyx8yqKtgovN-TppAthd-fEoWdg20HRgXCFGfDidffT4KhI',
   },
   {
-    label: 'ณัฐพล (โครงข่าย)',
+    label: 'รูปโปรไฟล์ D (ผู้ปฏิบัติการ)',
     url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCRx8sBBcPz8sybMlgMQl_qXmLMkO991RJsPgfySKZZxUGzhe0TXh_0gB3GcWSGH9fKezyPY1x4Sdpgf-f-TtsWep1cupW2EZtg9tuaGZH6ym3Tbj8DLaamn0e4GY0WCcl72IZid26YLtEYtys1w92ZMhBwuL2HzGBacaqMWgIzrvwluZ5aC4zQyDzPdxh4xgIUNr7ddIJEeN7hRntrPErTXtBa9wsunNQbvjABe-fOnHVlzax6vZY',
   },
   {
-    label: 'เจ้าหน้าที่หญิง',
-    url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBZP4i6GSi7K5f0xsm5j-RfUi6uYudZfHVh9lArt79t_L4nOsZx7bpVHvXZYqKWHoSq90nNXv3YZUQhGb-Tg8KkjtEVvLKSCByu8Z6JuhqRQfDJoVVC9CPhQDyeqpuIEYLcPco-AO4VmYRNUx9IStU8SB_8Kjdln5MfxWW1Tl8fVdAeuNnfMhnhzHXHigbufHgdKmxM-J1DwzYMiat72U2KTqsaBeeoEW3r1HsreiKm85-AKVb6PyA',
+    label: 'รูปโปรไฟล์ E (ผู้ใช้งานทั่วไป)',
+    url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDiJQsCwr1VqyJmlbGqb8jbSLyYbEle1fwdDCyk1HawtrgmprFZP0-AVsCqR_0ovHtWx7buZKrA280iqm01bYMZJ-BwtG1f1hRofUn7QxXZ1k0gbAooMBzHP-_kkx0Vvg2V3UvjkyMTVXyySjNWftjwl3kAJz7CPCEypnDPu-UL5z-Zpw208VSAFeJnho1oxV3FmYYMbPNHjBXltJqfSjxy16g_5dZmrxP-G7FeAeAVyuDv_z54GZk',
   },
 ];
 
@@ -55,7 +47,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [name, setName] = useState(currentUser.name);
   const [phone, setPhone] = useState(currentUser.phone);
   const [dept, setDept] = useState(currentUser.department);
-  const [role, setRole] = useState<'admin' | 'user'>(currentUser.role);
+  const [role, setRole] = useState<UserRole>(currentUser.role);
   const [avatar, setAvatar] = useState(currentUser.avatar);
   const [customUrl, setCustomUrl] = useState('');
   const [showAvatarModal, setShowAvatarModal] = useState(false);
@@ -106,18 +98,26 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    const roleLabel =
+      role === 'admin'
+        ? 'แอดมินระบบสูงสุด (Super Admin - อำนาจสูงสุด)'
+        : role === 'technician'
+        ? 'ช่างเทคนิคไอที (IT Technician)'
+        : 'ผู้ใช้บริการ (Staff / Requester)';
+
     onUpdateProfile({
       name,
       phone,
       department: dept,
       avatar,
       role,
-      roleLabel:
-        role === 'admin'
-          ? 'เจ้าหน้าที่ไอที / แอดมินระบบ'
-          : 'บุคลากรทั่วไป (Staff)',
+      roleLabel,
     });
-    onShowToast('บันทึกข้อมูลเรียบร้อย', `อัปเดตข้อมูลและสิทธิ์เป็น ${role === 'admin' ? 'แอดมิน (Admin)' : 'ผู้ใช้ทั่วไป (User)'} สำเร็จ`, 'success');
+    onShowToast(
+      'บันทึกข้อมูลเรียบร้อย',
+      `อัปเดตข้อมูลและสิทธิ์เป็น [${roleLabel}] สำเร็จ`,
+      'success'
+    );
   };
 
   return (
@@ -243,14 +243,19 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${
                   role === 'admin'
                     ? 'bg-blue-100 text-[#143ee4]'
+                    : role === 'technician'
+                    ? 'bg-amber-100 text-amber-800'
                     : 'bg-emerald-100 text-emerald-800'
                 }`}
               >
-                {role === 'admin' ? '🛡️ แอดมิน (Admin)' : '👤 ผู้ใช้ทั่วไป (User)'}
+                {role === 'admin' && '🛡️ แอดมิน (อำนาจสูงสุด)'}
+                {role === 'technician' && '🛠️ ช่างเทคนิคไอที'}
+                {role === 'user' && '👤 ผู้ใช้บริการ (User)'}
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+              {/* Admin Card */}
               <label
                 className={`p-3 rounded-xl border flex items-start gap-3 cursor-pointer transition-all ${
                   role === 'admin'
@@ -268,14 +273,47 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 />
                 <div>
                   <span className="font-bold text-xs text-slate-900 block">
-                    🛡️ เจ้าหน้าที่ไอที / แอดมิน (Admin)
+                    🛡️ แอดมิน (Super Admin)
+                  </span>
+                  <span className="text-[10px] text-[#143ee4] font-extrabold block">
+                    อำนาจสูงสุด 100%
                   </span>
                   <span className="text-[11px] text-slate-500 block mt-0.5 leading-relaxed">
-                    สิทธิ์เต็ม: รับงาน, เปลี่ยนสถานะ, มอบหมายช่าง, จัดการใบงานทั้งหมด, และตั้งค่าระบบ
+                    จัดการทุกส่วน ลบ/ล้างข้อมูล บังคับมอบหมายงาน และกำหนดสิทธิ์ทุกคน
                   </span>
                 </div>
               </label>
 
+              {/* Technician Card */}
+              <label
+                className={`p-3 rounded-xl border flex items-start gap-3 cursor-pointer transition-all ${
+                  role === 'technician'
+                    ? 'bg-amber-50/70 border-amber-500 shadow-xs'
+                    : 'bg-white border-slate-200 hover:bg-slate-50'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="roleSelect"
+                  value="technician"
+                  checked={role === 'technician'}
+                  onChange={() => setRole('technician')}
+                  className="mt-1 text-amber-600"
+                />
+                <div>
+                  <span className="font-bold text-xs text-slate-900 block">
+                    🛠️ ช่างเทคนิค (Technician)
+                  </span>
+                  <span className="text-[10px] text-amber-700 font-extrabold block">
+                    ปฏิบัติการงานซ่อม
+                  </span>
+                  <span className="text-[11px] text-slate-500 block mt-0.5 leading-relaxed">
+                    โต๊ะงานช่าง รับงานจากคลังกลาง (Claim) อัปเดตงานซ่อม และปิดงาน
+                  </span>
+                </div>
+              </label>
+
+              {/* User Card */}
               <label
                 className={`p-3 rounded-xl border flex items-start gap-3 cursor-pointer transition-all ${
                   role === 'user'
@@ -293,10 +331,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 />
                 <div>
                   <span className="font-bold text-xs text-slate-900 block">
-                    👤 บุคลากร / ผู้ใช้งานทั่วไป (User)
+                    👤 ผู้ใช้บริการ (User / Staff)
+                  </span>
+                  <span className="text-[10px] text-emerald-700 font-extrabold block">
+                    แจ้งซ่อม & ติดตาม
                   </span>
                   <span className="text-[11px] text-slate-500 block mt-0.5 leading-relaxed">
-                    สิทธิ์แจ้งซ่อม: แจ้งปัญหาใหม่, ติดตามสถานะงานของตนเอง, ส่งข้อความแชทกับช่าง
+                    แจ้งปัญหาใหม่ ติดตามสถานะงานของตนเอง ส่งข้อความหาช่าง
                   </span>
                 </div>
               </label>
